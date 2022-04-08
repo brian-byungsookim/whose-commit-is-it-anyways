@@ -1,9 +1,7 @@
 import express from "express";
 
+import { coreRouter } from "./core";
+
 export const app = express();
 
-
-app.get("/", (_, res) => {
-  res.status(200).send("Hello World!");
-});
-
+app.use("/v1", coreRouter);
