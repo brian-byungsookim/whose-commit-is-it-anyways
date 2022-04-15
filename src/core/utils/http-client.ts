@@ -1,26 +1,5 @@
 import axios, { AxiosRequestHeaders, AxiosError } from "axios";
-
-export type HttpHeaders = Record<string, string | number | boolean>;
-export type HttpMethod = "GET" /* | "POST" | "PUT" | "DELETE" */;
-
-export class HttpResponse<T> {
-  constructor(
-    public data: T,
-    public status: number,
-    public headers: HttpHeaders
-  ) { }
-}
-
-export class HttpErrorResponse<T> extends Error {
-  constructor(
-    public data: T,
-    public status: number,
-    public headers: HttpHeaders,
-    public message: string
-  ) {
-    super(message);
-  }
-}
+import { HttpErrorResponse, HttpHeaders, HttpMethod, HttpRequestConfig, HttpResponse } from "../models";
 
 export class HttpClient {
   private static client: HttpClient;
@@ -52,7 +31,18 @@ export class HttpClient {
     opts?: { headers?: HttpHeaders }
   ): Promise<HttpResponse<T>> {
     try {
-      return await axios.request<T>({ url, method, ...opts, ...this.DEFAULT_HEADERS });
+      const response = await axios.request<T>({ url, method, headers: { ...opts?.headers, ...this.DEFAULT_HEADERS } });
+
+      return new HttpResponse<T>(
+        response.data,
+        response.status,
+        response.headers,
+        new HttpRequestConfig(
+          response.config.url,
+          response.config.method as HttpMethod,
+          response.config.headers
+        )
+      );
     } catch (err: any) {
       if (this.isAxiosError(err)) {
         throw new HttpErrorResponse<T>(
