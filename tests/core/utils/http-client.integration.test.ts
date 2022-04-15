@@ -19,15 +19,27 @@ describe("http-client.ts::integration", () => {
       expect(config).toHaveProperty("headers.User-Agent", "whose-commit-is-it-anyways");
     });
 
-    test("should pass headers on in the request", async () => {
+    test("should pass headers thru in the request", async () => {
       const http = HttpClient.getInstance();
       const { status, config } = await http.get<any>(
         "https://www.google.com",
-        {"X-custom-header": "wayne-brady"}
+        { headers: {"X-custom-header": "wayne-brady"} }
       );
 
       expect(status).toEqual(200);
       expect(config).toHaveProperty("headers.X-custom-header", "wayne-brady");
+    });
+
+    test("should use auth in the request", async () => {
+      const http = HttpClient.getInstance();
+      const { status, config } = await http.get<any>(
+        "https://www.google.com",
+        { auth: { username: "test-username", password: "basic-auth-password" } }
+      );
+
+      expect(status).toEqual(200);
+      expect(config).toHaveProperty("auth.username", "test-username");
+      expect(config).toHaveProperty("auth.password", "basic-auth-password");
     });
 
     test("should throw an HttpErrorResponse when unable to complete the HTTP request", async () => {
@@ -37,7 +49,7 @@ describe("http-client.ts::integration", () => {
         await http.get<any>("not-a-url");
       } catch (err: any) {
         expect(err).toBeInstanceOf(HttpErrorResponse);
-        expect((<HttpErrorResponse<any>>err).status).toEqual(500);
+        expect((<HttpErrorResponse>err).status).toEqual(500);
       }
     });
   });

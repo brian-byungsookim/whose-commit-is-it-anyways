@@ -1,5 +1,5 @@
-import axios, { AxiosRequestHeaders, AxiosError } from "axios";
-import { HttpErrorResponse, HttpHeaders, HttpMethod, HttpRequestConfig, HttpResponse } from "../models";
+import axios, { AxiosRequestHeaders, AxiosError, AxiosRequestConfig } from "axios";
+import { BasicAuthCredentials, HttpErrorResponse, HttpHeaders, HttpMethod, HttpRequestConfig, HttpResponse } from "../models";
 
 export class HttpClient {
   private static client: HttpClient;
@@ -21,17 +21,23 @@ export class HttpClient {
     };
   }
 
-  public async get<T>(url: string, headers?: HttpHeaders): Promise<HttpResponse<T>> {
-    return this.makeRequest<T>(url, "GET", { headers });
+  public async get<T>(url: string, opts?: { headers?: HttpHeaders, auth?: BasicAuthCredentials }): Promise<HttpResponse<T>> {
+    return this.makeRequest<T>(url, "GET", opts);
   }
 
   private async makeRequest<T>(
     url: string,
     method: HttpMethod,
-    opts?: { headers?: HttpHeaders }
+    opts?: { headers?: HttpHeaders, auth?: BasicAuthCredentials }
   ): Promise<HttpResponse<T>> {
     try {
-      const response = await axios.request<T>({ url, method, headers: { ...opts?.headers, ...this.DEFAULT_HEADERS } });
+      const requestConfig: AxiosRequestConfig<T> = {
+        url,
+        method,
+        headers: { ...opts?.headers, ...this.DEFAULT_HEADERS },
+        auth: opts?.auth
+      };
+      const response = await axios.request<T>(requestConfig);
 
       return new HttpResponse<T>(
         response.data,
@@ -40,19 +46,20 @@ export class HttpClient {
         new HttpRequestConfig(
           response.config.url,
           response.config.method as HttpMethod,
-          response.config.headers
+          response.config.headers,
+          response.config.auth,
         )
       );
     } catch (err: any) {
       if (this.isAxiosError(err)) {
-        throw new HttpErrorResponse<T>(
+        throw new HttpErrorResponse(
           err.response?.data || {},
           err.response?.status || 500,
           err.response?.headers || {},
           "TODO: error message"
         );
       } else {
-        throw new HttpErrorResponse<T>({} as T, 500, {}, "Something went really wrong");
+        throw new HttpErrorResponse({}, 500, {}, "Something went really wrong");
       }
     }
   }
