@@ -1,3 +1,5 @@
+export type GitHubLinkType = "next" | "prev" | "last" | "first";
+
 export class GitHubPullRequest {
   constructor(
     public id: number,
@@ -21,5 +23,12 @@ export class GitHubCommit {
 export class GitHubAuthor {
   constructor(
     public name: string
+  ) { }
+}
+
+export class GitHubLink {
+  constructor(
+    public link: string,
+    public rel: GitHubLinkType
   ) { }
 }

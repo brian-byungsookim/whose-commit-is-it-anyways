@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { APIError } from "../models";
 
 export function errorHandler(
-  err: Error,
+  err: Error | APIError,
   _: Request,
   res: Response,
   __: NextFunction

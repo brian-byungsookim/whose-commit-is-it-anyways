@@ -21,21 +21,25 @@ export class HttpClient {
     };
   }
 
-  public async get<T>(url: string, opts?: { headers?: HttpHeaders, auth?: BasicAuthCredentials }): Promise<HttpResponse<T>> {
+  public async get<T>(
+    url: string,
+    opts?: { headers?: HttpHeaders, auth?: BasicAuthCredentials, params?: any }
+  ): Promise<HttpResponse<T>> {
     return this.makeRequest<T>(url, "GET", opts);
   }
 
   private async makeRequest<T>(
     url: string,
     method: HttpMethod,
-    opts?: { headers?: HttpHeaders, auth?: BasicAuthCredentials }
+    opts?: { headers?: HttpHeaders, auth?: BasicAuthCredentials, params?: any }
   ): Promise<HttpResponse<T>> {
     try {
       const requestConfig: AxiosRequestConfig<T> = {
         url,
         method,
         headers: { ...opts?.headers, ...this.DEFAULT_HEADERS },
-        auth: opts?.auth
+        auth: opts?.auth,
+        params: opts?.params
       };
       const response = await axios.request<T>(requestConfig);
 
@@ -56,7 +60,7 @@ export class HttpClient {
           err.response?.data || {},
           err.response?.status || 500,
           err.response?.headers || {},
-          "TODO: error message"
+          err.response?.statusText || "Unexpected error"
         );
       } else {
         throw new HttpErrorResponse({}, 500, {}, "Something went really wrong");
