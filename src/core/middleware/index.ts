@@ -1,3 +1,2 @@
-// TODO: "auth" middleware
-// TODO: error handler middleware
-// 
+export * from "./error-handler";
+export * from "./validators";

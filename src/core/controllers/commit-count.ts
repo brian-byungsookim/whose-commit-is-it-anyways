@@ -1,5 +1,6 @@
-import { Response } from "express";
+import { Request, Response } from "express";
 
-export function listCommitCounts(_: any, res: Response) {
+export function listCommitCounts(req: Request, res: Response) {
+  console.log(`[200]: Found x commits`);
   res.status(200).json({ hello: "world" });
 };
